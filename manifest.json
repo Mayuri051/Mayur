@@ -8,12 +8,12 @@
     "orientation":"portrait-primary",
     "icons":[
         {
-            "src":"img/flutter_resize2.png",
+            "src":"seneray72.png",
             "type":"image/png",
             "sizes":"72x72"
         },
 {
-            "src":"img/flutter_resize2.png",
+            "src":"seneray144.png",
             "type":"image/png",
             "sizes":"144x144",
             "purpose":"any"
