@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Test - {{ test_paper.name }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .question-card {
+            background: white;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            padding: 2rem;
+        }
+        
+        .option-item {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .option-item:hover {
+            border-color: #4e73df;
+            background-color: #f8f9fe;
+        }
+        
+        .option-item.selected {
+            border-color: #4e73df;
+            background-color: #4e73df;
+            color: white;
+        }
+        
+        .timer-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            z-index: 1000;
+            text-align: center;
+        }
+        
+        .timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e74a3b;
+        }
+        
+        .navigation-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            z-index: 1000;
+        }
+        
+        .question-nav {
+            position: fixed;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            z-index: 1000;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .question-dot {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0.2rem;
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .question-dot.current {
+            border-color: #4e73df;
+            background-color: #4e73df;
+            color: white;
+        }
+        
+        .question-dot.answered {
+            border-color: #1cc88a;
+            background-color: #1cc88a;
+            color: white;
+        }
+        
+        .question-dot:hover {
+            transform: scale(1.1);
+        }
+        
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .instructions-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            max-width: 600px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Fullscreen Instructions Overlay -->
+    <div id="instructionsOverlay" class="fullscreen-overlay">
+        <div class="instructions-card">
+            <h2 class="mb-4"><i class="fas fa-graduation-cap me-2 text-primary"></i>Test Instructions</h2>
+            <div class="text-start mb-4">
+                <h5>Test: {{ test_paper.name }}</h5>
+                <p class="text-muted">{{ test_paper.description or "No description provided" }}</p>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong>Subject:</strong> {{ test_paper.subject }}
+                    </div>
+                    <div class="col-6">
+                        <strong>Questions:</strong> {{ test_paper.total_questions }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong>Duration:</strong> {{ test_paper.duration }} minutes
+                    </div>
+                    <div class="col-6">
+                        <strong>Time Left:</strong> <span id="totalTimeDisplay">{{ test_paper.duration }}:00</span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Important Instructions:</h6>
+                    <ul class="mb-0 ps-3">
+                        <li>You cannot pause the test once started</li>
+                        <li>Use the navigation panel to jump between questions</li>
+                        <li>Answers are auto-saved as you progress</li>
+                        <li>Submit the test before time runs out</li>
+                        <li>Do not refresh the page during the test</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="d-grid gap-2">
+                <button id="startTestBtn" class="btn btn-primary btn-lg">
+                    <i class="fas fa-play-circle me-2"></i>Start Test
+                </button>
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Header (Hidden until test starts) -->
+    <div id="testHeader" class="test-header" style="display: none;">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h1 class="h3 mb-1">{{ test_paper.name }}</h1>
+                    <p class="mb-0">{{ test_paper.subject }} • {{ questions|length }} Questions</p>
+                </div>
+                <div class="col text-center">
+                    <div id="testTimer" class="timer">00:00</div>
+                    <small>Time Remaining</small>
+                </div>
+                <div class="col text-end">
+                    <button id="submitTestBtn" class="btn btn-light">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Test
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="testContainer" style="display: none;">
+        <div class="row">
+            <!-- Question Navigation -->
+            <div class="question-nav">
+                <h6 class="text-center mb-3">Questions</h6>
+                <div id="questionDots" class="text-center">
+                    {% for i in range(1, questions|length + 1) %}
+                    <div class="question-dot" data-question="{{ i }}">{{ i }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-12">
+                <form id="testForm" method="POST" action="{{ url_for('submit_test', assignment_id=assignment.id) }}">
+                    {% for question in questions %}
+                    <div class="question-container" id="question{{ question.question_number }}" style="display: none;">
+                        <div class="question-card">
+                            <div class="d-flex justify-content-between align-items-start mb-4">
+                                <h4 class="text-primary">Question {{ question.question_number }}</h4>
+                                <span class="badge bg-secondary">{{ question.question.difficulty|title }}</span>
+                            </div>
+                            
+                            <p class="lead mb-4">{{ question.question.question_text }}</p>
+                            
+                            <div class="options-container">
+                                <div class="option-item" data-option="A">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold me-3">A</span>
+                                        <span>{{ question.question.option_a }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="option-item" data-option="B">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold me-3">B</span>
+                                        <span>{{ question.question.option_b }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="option-item" data-option="C">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold me-3">C</span>
+                                        <span>{{ question.question.option_c }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="option-item" data-option="D">
+                                    <div class="d-flex align-items-center">
+                                        <span class="fw-bold me-3">D</span>
+                                        <span>{{ question.question.option_d }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" name="answer_{{ question.question.id }}" id="answer_{{ question.question.id }}">
+                            
+                            <!-- Query Button -->
+                            <div class="mt-4 pt-3 border-top">
+                                <button type="button" class="btn btn-outline-warning btn-sm query-btn" data-question-id="{{ question.question.id }}">
+                                    <i class="fas fa-question-circle me-1"></i>Flag Question
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <input type="hidden" name="answers_data" id="answersData">
+                    <input type="hidden" name="time_taken" id="timeTaken">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="navigation-buttons" style="display: none;">
+        <div class="btn-group">
+            <button id="prevBtn" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            <button id="nextBtn" class="btn btn-primary">
+                Next <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Query Modal -->
+    <div class="modal fade" id="queryModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-question-circle me-2 text-warning"></i>Flag Question</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Please describe the issue with this question:</p>
+                    <textarea class="form-control" id="queryText" rows="3" placeholder="Enter your concern about this question..."></textarea>
+                    <input type="hidden" id="queryQuestionId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="submitQueryBtn">
+                        <i class="fas fa-paper-plane me-1"></i>Submit Query
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let currentQuestion = 1;
+        let totalQuestions = {{ questions|length }};
+        let totalTime = {{ test_paper.duration * 60 }}; // Convert to seconds
+        let timeLeft = totalTime;
+        let timerInterval;
+        let answers = {};
+        let testStarted = false;
+
+        // Start test button
+        document.getElementById('startTestBtn').addEventListener('click', function() {
+            document.getElementById('instructionsOverlay').style.display = 'none';
+            document.getElementById('testHeader').style.display = 'block';
+            document.getElementById('testContainer').style.display = 'block';
+            document.querySelector('.navigation-buttons').style.display = 'block';
+            
+            // Show first question
+            showQuestion(1);
+            
+            // Start timer
+            startTimer();
+            
+            // Mark test as started
+            testStarted = true;
+            
+            // Enter fullscreen (optional - can be removed if not needed)
+            // document.documentElement.requestFullscreen().catch(err => {
+            //     console.log('Fullscreen not supported:', err);
+            // });
+        });
+
+        // Timer functions
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(function() {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    submitTest();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('testTimer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Change color when time is running out
+            if (timeLeft < 300) { // 5 minutes
+                document.getElementById('testTimer').style.color = '#e74a3b';
+            }
+        }
+
+        // Question navigation
+        function showQuestion(questionNum) {
+            // Hide all questions
+            document.querySelectorAll('.question-container').forEach(q => {
+                q.style.display = 'none';
+            });
+            
+            // Show current question
+            document.getElementById(`question${questionNum}`).style.display = 'block';
+            
+            // Update navigation dots
+            document.querySelectorAll('.question-dot').forEach(dot => {
+                dot.classList.remove('current');
+                if (parseInt(dot.dataset.question) === questionNum) {
+                    dot.classList.add('current');
+                }
+            });
+            
+            // Update button states
+            document.getElementById('prevBtn').disabled = (questionNum === 1);
+            document.getElementById('nextBtn').textContent = 
+                (questionNum === totalQuestions) ? 'Submit' : 'Next <i class="fas fa-arrow-right"></i>';
+        }
+
+        // Navigation button handlers
+        document.getElementById('prevBtn').addEventListener('click', function() {
+            if (currentQuestion > 1) {
+                saveAnswer();
+                showQuestion(--currentQuestion);
+            }
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', function() {
+            saveAnswer();
+            
+            if (currentQuestion < totalQuestions) {
+                showQuestion(++currentQuestion);
+            } else {
+                submitTest();
+            }
+        });
+
+        // Question dot navigation
+        document.querySelectorAll('.question-dot').forEach(dot => {
+            dot.addEventListener('click', function() {
+                saveAnswer();
+                currentQuestion = parseInt(this.dataset.question);
+                showQuestion(currentQuestion);
+            });
+        });
+
+        // Option selection
+        document.querySelectorAll('.option-item').forEach(option => {
+            option.addEventListener('click', function() {
+                const questionContainer = this.closest('.question-container');
+                const questionId = questionContainer.querySelector('input[type="hidden"]').id.replace('answer_', '');
+                const selectedOption = this.dataset.option;
+                
+                // Remove selection from other options in this question
+                questionContainer.querySelectorAll('.option-item').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Select current option
+                this.classList.add('selected');
+                
+                // Save answer
+                answers[questionId] = selectedOption;
+                
+                // Mark question as answered in navigation
+                const questionNum = parseInt(questionContainer.id.replace('question', ''));
+                const questionDot = document.querySelector(`.question-dot[data-question="${questionNum}"]`);
+                questionDot.classList.add('answered');
+            });
+        });
+
+        // Save current answer
+        function saveAnswer() {
+            const currentQuestionContainer = document.getElementById(`question${currentQuestion}`);
+            const questionId = currentQuestionContainer.querySelector('input[type="hidden"]').id.replace('answer_', '');
+            const selectedOption = currentQuestionContainer.querySelector('.option-item.selected');
+            
+            if (selectedOption) {
+                answers[questionId] = selectedOption.dataset.option;
+            }
+        }
+
+        // Query functionality
+        document.querySelectorAll('.query-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const questionId = this.dataset.questionId;
+                document.getElementById('queryQuestionId').value = questionId;
+                const queryModal = new bootstrap.Modal(document.getElementById('queryModal'));
+                queryModal.show();
+            });
+        });
+
+        document.getElementById('submitQueryBtn').addEventListener('click', function() {
+            const questionId = document.getElementById('queryQuestionId').value;
+            const queryText = document.getElementById('queryText').value;
+            
+            if (queryText.trim()) {
+                // Submit query via AJAX
+                fetch("{{ url_for('query_question') }}", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `question_id=${questionId}&test_paper_id={{ test_paper.id }}&query_text=${encodeURIComponent(queryText)}`
+                }).then(response => {
+                    if (response.ok) {
+                        alert('Your query has been submitted to the teacher.');
+                        bootstrap.Modal.getInstance(document.getElementById('queryModal')).hide();
+                        document.getElementById('queryText').value = '';
+                    }
+                });
+            } else {
+                alert('Please enter your query before submitting.');
+            }
+        });
+
+        // Submit test
+        function submitTest() {
+            clearInterval(timerInterval);
+            saveAnswer();
+            
+            // Calculate time taken
+            const timeTaken = totalTime - timeLeft;
+            document.getElementById('timeTaken').value = timeTaken;
+            document.getElementById('answersData').value = JSON.stringify(answers);
+            
+            // Submit form
+            document.getElementById('testForm').submit();
+        }
+
+        document.getElementById('submitTestBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to submit the test? You cannot change your answers after submission.')) {
+                submitTest();
+            }
+        });
+
+        // Prevent accidental navigation
+        window.addEventListener('beforeunload', function(e) {
+            if (testStarted && timeLeft > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+                return 'Your test progress will be lost if you leave this page. Are you sure?';
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pre-populate answers if any exist
+            const savedAnswers = localStorage.getItem('test_answers_{{ assignment.id }}');
+            if (savedAnswers) {
+                answers = JSON.parse(savedAnswers);
+                // Restore selected answers
+                Object.keys(answers).forEach(questionId => {
+                    const option = document.querySelector(`#question${getQuestionNumber(questionId)} .option-item[data-option="${answers[questionId]}"]`);
+                    if (option) {
+                        option.classList.add('selected');
+                        const questionNum = getQuestionNumber(questionId);
+                        const questionDot = document.querySelector(`.question-dot[data-question="${questionNum}"]`);
+                        questionDot.classList.add('answered');
+                    }
+                });
+            }
+            
+            // Auto-save answers periodically
+            setInterval(function() {
+                if (testStarted) {
+                    saveAnswer();
+                    localStorage.setItem('test_answers_{{ assignment.id }}', JSON.stringify(answers));
+                }
+            }, 30000); // Save every 30 seconds
+        });
+
+        function getQuestionNumber(questionId) {
+            // This function would need to map question IDs to question numbers
+            // For now, we'll use a simple approach - you might need to adjust this
+            const questionElement = document.querySelector(`input[id="answer_${questionId}"]`);
+            if (questionElement) {
+                const container = questionElement.closest('.question-container');
+                return parseInt(container.id.replace('question', ''));
+            }
+            return 1;
+        }
+    </script>
+</body>
+</html>

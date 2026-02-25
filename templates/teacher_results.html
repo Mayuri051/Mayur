@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results - Teacher Panel</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .sidebar {
+            background-color: #2c3e50;
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .sidebar .nav-link {
+            color: #bdc3c7;
+            padding: 0.75rem 1rem;
+            border-radius: 5px;
+            margin-bottom: 0.25rem;
+        }
+        
+        .sidebar .nav-link:hover {
+            color: white;
+            background-color: #34495e;
+        }
+        
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: #3498db;
+        }
+        
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+        }
+        
+        .badge-score {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <div class="p-3">
+                    <h5 class="text-primary mb-4">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Teacher Panel
+                    </h5>
+                    <hr class="bg-secondary">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('teacher_dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('manage_questions') }}">
+                                <i class="fas fa-question-circle"></i> Manage Questions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('manage_tests') }}">
+                                <i class="fas fa-file-alt"></i> Manage Tests
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('view_results') }}">
+                                <i class="fas fa-chart-bar"></i> View Results
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('student_queries') }}">
+                                <i class="fas fa-question"></i> Student Queries
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="p-4">
+                    <!-- Header -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-1"><i class="fas fa-chart-bar me-2 text-primary"></i>Test Results Analysis</h2>
+                            <p class="text-muted mb-0">Comprehensive overview of student performance</p>
+                        </div>
+                        <a href="{{ url_for('download_performance') }}" class="btn btn-success">
+                            <i class="fas fa-download me-2"></i> Download CSV
+                        </a>
+                    </div>
+
+                    <!-- Results Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center py-4">
+                                    <i class="fas fa-file-alt fa-2x mb-3"></i>
+                                    <h3>{{ results|length }}</h3>
+                                    <p class="mb-0">Total Tests</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center py-4">
+                                    <i class="fas fa-chart-line fa-2x mb-3"></i>
+                                    <h3>{{ "%.1f"|format(average_percentage) if results else 0 }}%</h3>
+                                    <p class="mb-0">Average Score</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center py-4">
+                                    <i class="fas fa-trophy fa-2x mb-3"></i>
+                                    <h3>{{ "%.1f"|format(best_score) if results else 0 }}%</h3>
+                                    <p class="mb-0">Best Score</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center py-4">
+                                    <i class="fas fa-users fa-2x mb-3"></i>
+                                    <h3>{{ total_students }}</h3>
+                                    <p class="mb-0">Unique Students</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Table -->
+                    <div class="card">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+                            <h5 class="mb-0"><i class="fas fa-list me-2"></i>All Test Results</h5>
+                            <span class="badge bg-primary">{{ results|length }} records</span>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if results %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover mb-0">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Student Name</th>
+                                            <th>Test Name</th>
+                                            <th>Test Date</th>
+                                            <th>Questions</th>
+                                            <th>Correct</th>
+                                            <th>Score</th>
+                                            <th>Time Taken</th>
+                                            <th>Submitted</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in results %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 30px; height: 30px;">
+                                                        <i class="fas fa-user text-white" style="font-size: 0.8rem;"></i>
+                                                    </div>
+                                                    <span>{{ result.student.name }}</span>
+                                                </div>
+                                            </td>
+                                            <td>{{ result.test_paper.name }}</td>
+                                            <td>{{ result.test_date.strftime('%Y-%m-%d') }}</td>
+                                            <td>{{ result.total_questions }}</td>
+                                            <td>{{ result.correct_answers }}</td>
+                                            <td>
+                                                <span class="badge badge-score 
+                                                    {% if result.percentage >= 80 %}bg-success
+                                                    {% elif result.percentage >= 60 %}bg-warning
+                                                    {% else %}bg-danger{% endif %}">
+                                                    {{ "%.1f"|format(result.percentage) }}%
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if result.time_taken %}
+                                                    {{ (result.time_taken / 60)|round|int }} min
+                                                {% else %}
+                                                    <span class="text-muted">N/A</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ result.submitted_at.strftime('%H:%M') }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">No Test Results Available</h5>
+                                <p class="text-muted">Test results will appear here once students start taking tests.</p>
+                                <a href="{{ url_for('manage_tests') }}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-file-alt me-2"></i>Manage Tests
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Performance Analysis -->
+                    {% if results %}
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Score Distribution</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="scoreChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Performers</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group">
+                                        {% set top_results = results|sort(attribute='percentage', reverse=True)|slice(0,5) %}
+                                        {% for result in top_results %}
+                                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px;">
+                                                    <i class="fas fa-user text-white" style="font-size: 0.8rem;"></i>
+                                                </div>
+                                                <div>
+                                                    <strong>{{ result.student.name }}</strong>
+                                                    <br>
+                                                    <small class="text-muted">{{ result.test_paper.name }}</small>
+                                                </div>
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill fs-6">
+                                                {{ "%.1f"|format(result.percentage) }}%
+                                            </span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js -->
+    {% if results %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const scores = JSON.parse('{{ scores_json | safe }}');
+            
+            // Calculate score distribution
+            const scoreRanges = {
+                '90-100%': scores.filter(s => s >= 90).length,
+                '80-89%': scores.filter(s => s >= 80 && s < 90).length,
+                '70-79%': scores.filter(s => s >= 70 && s < 80).length,
+                '60-69%': scores.filter(s => s >= 60 && s < 70).length,
+                'Below 60%': scores.filter(s => s < 60).length
+            };
+
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(scoreRanges),
+                    datasets: [{
+                        data: Object.values(scoreRanges),
+                        backgroundColor: [
+                            '#28a745', // Green for 90-100%
+                            '#20c997', // Teal for 80-89%
+                            '#ffc107', // Yellow for 70-79%
+                            '#fd7e14', // Orange for 60-69%
+                            '#dc3545'  // Red for below 60%
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: ${value} students (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Test Results - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-chart-bar"></i> Test Results</h1>
+            
+            <!-- Statistics -->
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h6>Total Tests</h6>
+                            <h3>{{ total_tests }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h6>Average Score</h6>
+                            <h3>{{ "%.1f"|format(avg_score) }}%</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h6>Best Score</h6>
+                            <h3>{{ "%.1f"|format(best_score) }}%</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h6>Actions</h6>
+                            <a href="{{ url_for('download_results') }}" class="btn btn-light btn-sm">
+                                <i class="fas fa-download"></i> Download CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">All Test Results</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Test Name</th>
+                                    <th>Date</th>
+                                    <th>Score</th>
+                                    <th>Correct/Total</th>
+                                    <th>Time Taken</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in results %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ result.student.name }}</strong>
+                                        <br><small class="text-muted">{{ result.student.username }}</small>
+                                    </td>
+                                    <td>{{ result.test_name }}</td>
+                                    <td>{{ result.test_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if result.percentage >= 80 %}success{% elif result.percentage >= 60 %}warning{% else %}danger{% endif %}">
+                                            {{ "%.1f"|format(result.percentage) }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ result.correct_answers }}/{{ result.total_questions }}</td>
+                                    <td>{{ result.time_taken }}s</td>
+                                    <td>{{ result.submitted_at.strftime('%H:%M') }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No test results found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

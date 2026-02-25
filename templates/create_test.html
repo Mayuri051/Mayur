@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Test - Online Test System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .create-test-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 2rem auto;
+            overflow: hidden;
+        }
+        
+        .form-header {
+            background: linear-gradient(135deg, #4e73df 0%, #2a4cb3 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .form-body {
+            padding: 3rem;
+        }
+        
+        .form-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s;
+        }
+        
+        .form-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+        }
+        
+        .btn-create {
+            background: linear-gradient(135deg, #4e73df 0%, #2a4cb3 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            padding: 1rem 2rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(78, 115, 223, 0.3);
+        }
+        
+        .question-count-option {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
+        }
+        
+        .question-count-option:hover {
+            border-color: #4e73df;
+            background-color: #f8f9fe;
+        }
+        
+        .question-count-option.selected {
+            border-color: #4e73df;
+            background: linear-gradient(135deg, #4e73df15 0%, #2a4cb315 100%);
+        }
+        
+        .count-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4e73df;
+            margin-bottom: 0.5rem;
+        }
+        
+        .count-label {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        
+        .available-questions {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 0.5rem 0;
+            color: #718096;
+        }
+        
+        .feature-list li i {
+            color: #4e73df;
+            margin-right: 0.5rem;
+        }
+        
+        .back-btn {
+            color: #4e73df;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .back-btn:hover {
+            color: #2a4cb3;
+        }
+        
+        .duration-input {
+            max-width: 200px;
+        }
+        
+        .test-preview {
+            background: #f8f9fe;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .preview-item {
+            display: flex;
+            justify-content: between;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .preview-label {
+            font-weight: 600;
+            color: #4a5568;
+            min-width: 120px;
+        }
+        
+        .preview-value {
+            color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="create-test-container">
+                    <!-- Header -->
+                    <div class="form-header">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <a href="{{ url_for('teacher_dashboard') }}" class="back-btn">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                                </a>
+                            </div>
+                            <div class="col text-center">
+                                <h1 class="h2 mb-2"><i class="fas fa-plus-circle me-2"></i>Create New Test</h1>
+                                <p class="mb-0">Design your custom test with the options below</p>
+                            </div>
+                            <div class="col text-end">
+                                <span class="badge bg-light text-primary">Step 1 of 2</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            <div class="container mt-3">
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+
+                    <!-- Form Body -->
+                    <div class="form-body">
+                        <form method="POST" id="testForm">
+                            <div class="row">
+                                <!-- Left Column - Basic Information -->
+                                <div class="col-lg-6">
+                                    <!-- Test Name -->
+                                    <div class="form-card">
+                                        <div class="card-body">
+                                            <label class="form-label">
+                                                <i class="fas fa-heading me-2"></i>Test Name
+                                            </label>
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   name="test_name" 
+                                                   placeholder="Enter test name (e.g., 'Mathematics Midterm 2024')" 
+                                                   required
+                                                   oninput="updatePreview()">
+                                            <small class="form-text text-muted">Choose a descriptive name for your test</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Test Description -->
+                                    <div class="form-card">
+                                        <div class="card-body">
+                                            <label class="form-label">
+                                                <i class="fas fa-align-left me-2"></i>Test Description
+                                            </label>
+                                            <textarea class="form-control" 
+                                                      name="description" 
+                                                      rows="3" 
+                                                      placeholder="Describe the test purpose, topics covered, or instructions for students..."
+                                                      oninput="updatePreview()"></textarea>
+                                            <small class="form-text text-muted">Optional: Provide context for students</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Subject Selection -->
+                                    <div class="form-card">
+                                        <div class="card-body">
+                                            <label class="form-label">
+                                                <i class="fas fa-book me-2"></i>Subject
+                                            </label>
+                                            <select class="form-select" name="subject" required onchange="updateSubjectInfo()">
+                                                <option value="">Select a subject</option>
+                                                {% for subject in subjects %}
+                                                <option value="{{ subject }}">{{ subject }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <div id="subjectInfo" class="available-questions mt-2" style="display: none;">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    <span id="availableCount">0</span> questions available in this subject
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column - Test Configuration -->
+                                <div class="col-lg-6">
+                                    <!-- Question Count -->
+                                    <div class="form-card">
+                                        <div class="card-body">
+                                            <label class="form-label">
+                                                <i class="fas fa-question-circle me-2"></i>Number of Questions
+                                            </label>
+                                            <div class="row g-2">
+                                                <div class="col-4">
+                                                    <div class="question-count-option" onclick="selectQuestionCount(10)">
+                                                        <div class="count-number">10</div>
+                                                        <div class="count-label">Quick Test</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="question-count-option" onclick="selectQuestionCount(20)">
+                                                        <div class="count-number">20</div>
+                                                        <div class="count-label">Standard</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="question-count-option" onclick="selectQuestionCount(30)">
+                                                        <div class="count-number">30</div>
+                                                        <div class="count-label">Comprehensive</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" name="question_count" id="questionCount" required>
+                                        </div>
+                                    </div>
+
+                                    <!-- Duration -->
+                                    <div class="form-card">
+                                        <div class="card-body">
+                                            <label class="form-label">
+                                                <i class="fas fa-clock me-2"></i>Test Duration
+                                            </label>
+                                            <div class="input-group duration-input">
+                                                <input type="number" 
+                                                       class="form-control" 
+                                                       name="duration" 
+                                                       placeholder="60" 
+                                                       min="5" 
+                                                       max="180" 
+                                                       required
+                                                       oninput="updatePreview()">
+                                                <span class="input-group-text">minutes</span>
+                                            </div>
+                                            <small class="form-text text-muted">Recommended: 1-3 minutes per question</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Features -->
+                                    <div class="form-card">
+                                        <div class="card-body">
+                                            <label class="form-label">
+                                                <i class="fas fa-star me-2"></i>Test Features
+                                            </label>
+                                            <ul class="feature-list">
+                                                <li><i class="fas fa-check"></i> Automatic question selection from your bank</li>
+                                                <li><i class="fas fa-check"></i> Randomized question order</li>
+                                                <li><i class="fas fa-check"></i> Built-in timer and fullscreen mode</li>
+                                                <li><i class="fas fa-check"></i> Student query system for feedback</li>
+                                                <li><i class="fas fa-check"></i> Detailed performance analytics</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Test Preview -->
+                            <div class="test-preview">
+                                <h5 class="mb-3"><i class="fas fa-eye me-2"></i>Test Preview</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="preview-item">
+                                            <span class="preview-label">Test Name:</span>
+                                            <span class="preview-value" id="previewName">Not set</span>
+                                        </div>
+                                        <div class="preview-item">
+                                            <span class="preview-label">Subject:</span>
+                                            <span class="preview-value" id="previewSubject">Not selected</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="preview-item">
+                                            <span class="preview-label">Questions:</span>
+                                            <span class="preview-value" id="previewQuestions">0</span>
+                                        </div>
+                                        <div class="preview-item">
+                                            <span class="preview-label">Duration:</span>
+                                            <span class="preview-value" id="previewDuration">0 minutes</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="preview-item">
+                                    <span class="preview-label">Description:</span>
+                                    <span class="preview-value" id="previewDescription">No description provided</span>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-create btn-lg">
+                                    <i class="fas fa-plus-circle me-2"></i>Create Test
+                                </button>
+                                <p class="text-muted mt-2">
+                                    <small>You'll be able to assign this test to students after creation</small>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Question count selection
+        function selectQuestionCount(count) {
+            // Remove selected class from all options
+            document.querySelectorAll('.question-count-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            event.currentTarget.classList.add('selected');
+            
+            // Set hidden input value
+            document.getElementById('questionCount').value = count;
+            
+            // Update preview
+            updatePreview();
+        }
+
+        // Update subject information
+        function updateSubjectInfo() {
+            const subjectSelect = document.querySelector('select[name="subject"]');
+            const subjectInfo = document.getElementById('subjectInfo');
+            const availableCount = document.getElementById('availableCount');
+            
+            if (subjectSelect.value) {
+                // In a real application, you would fetch this data from the server
+                // For now, we'll use a mock count
+                const mockCounts = {
+                    'Mathematics': 45,
+                    'Science': 32,
+                    'English': 28,
+                    'History': 23,
+                    'Geography': 19
+                };
+                
+                const count = mockCounts[subjectSelect.value] || 25;
+                availableCount.textContent = count;
+                subjectInfo.style.display = 'block';
+            } else {
+                subjectInfo.style.display = 'none';
+            }
+            
+            updatePreview();
+        }
+
+        // Update test preview
+        function updatePreview() {
+            // Test name
+            const testName = document.querySelector('input[name="test_name"]').value;
+            document.getElementById('previewName').textContent = testName || 'Not set';
+            
+            // Subject
+            const subject = document.querySelector('select[name="subject"]').value;
+            document.getElementById('previewSubject').textContent = subject || 'Not selected';
+            
+            // Questions
+            const questionCount = document.getElementById('questionCount').value;
+            document.getElementById('previewQuestions').textContent = questionCount || '0';
+            
+            // Duration
+            const duration = document.querySelector('input[name="duration"]').value;
+            document.getElementById('previewDuration').textContent = duration ? duration + ' minutes' : '0 minutes';
+            
+            // Description
+            const description = document.querySelector('textarea[name="description"]').value;
+            document.getElementById('previewDescription').textContent = description || 'No description provided';
+        }
+
+        // Form validation
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            const questionCount = document.getElementById('questionCount').value;
+            if (!questionCount) {
+                e.preventDefault();
+                alert('Please select the number of questions for your test.');
+                return false;
+            }
+            
+            const subject = document.querySelector('select[name="subject"]').value;
+            if (!subject) {
+                e.preventDefault();
+                alert('Please select a subject for your test.');
+                return false;
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select default question count
+            selectQuestionCount(10);
+            updatePreview();
+        });
+    </script>
+</body>
+</html>

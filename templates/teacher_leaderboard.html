@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaderboard</title>
+</head>
+<body>
+    <h2>Student Leaderboard</h2>
+    
+    <h3>Top Performers</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Student Name</th>
+                <th>Average Score</th>
+                <th>Tests Taken</th>
+                <th>Average Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in top_students %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ student.name }}</td>
+                <td>{{ "%.2f"|format(student.avg_score) }}%</td>
+                <td>{{ student.tests_taken }}</td>
+                <td>{{ "%.2f"|format(student.avg_time) }}s</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Test Performance</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Test Name</th>
+                <th>Average Score</th>
+                <th>Attempts</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for test in test_performance %}
+            <tr>
+                <td>{{ test.name }}</td>
+                <td>{{ "%.2f"|format(test.avg_score) }}%</td>
+                <td>{{ test.attempts }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <a href="{{ url_for('download_performance') }}">Download Excel Report</a>
+</body>
+</html>

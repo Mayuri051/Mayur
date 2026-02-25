@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Questions{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-question-circle"></i> Manage Questions</h1>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Add New Question</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('upload_question') }}">
+                        <div class="mb-3">
+                            <label class="form-label">Subject</label>
+                            <input type="text" class="form-control" name="subject" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Question Text</label>
+                            <textarea class="form-control" name="question_text" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Option A</label>
+                            <input type="text" class="form-control" name="option_a" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Option B</label>
+                            <input type="text" class="form-control" name="option_b" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Option C</label>
+                            <input type="text" class="form-control" name="option_c" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Option D</label>
+                            <input type="text" class="form-control" name="option_d" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Correct Answer</label>
+                            <select class="form-control" name="correct_answer" required>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Explanation (Optional)</label>
+                            <textarea class="form-control" name="explanation" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Question</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Your Questions ({{ questions|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if questions %}
+                        {% for question in questions %}
+                        <div class="border-bottom py-2">
+                            <h6>{{ question.subject }}</h6>
+                            <p class="mb-1">{{ question.question_text }}</p>
+                            <small class="text-muted">
+                                Correct: {{ question.correct_answer }} | 
+                                Status: <span class="badge bg-{{ 'success' if question.is_active else 'secondary' }}">
+                                    {{ 'Active' if question.is_active else 'Inactive' }}
+                                </span>
+                            </small>
+                            <div class="mt-1">
+                                <a href="{{ url_for('toggle_question', question_id=question.id) }}" 
+                                   class="btn btn-sm btn-{{ 'warning' if question.is_active else 'success' }}">
+                                    {{ 'Deactivate' if question.is_active else 'Activate' }}
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No questions yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

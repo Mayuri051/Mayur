@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Assign Test - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar">
+            <div class="p-3">
+                <h5 class="text-primary">Admin Panel</h5>
+                <hr>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('manage_users') }}">
+                            <i class="fas fa-users"></i> Manage Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('assign_test') }}">
+                            <i class="fas fa-tasks"></i> Assign Tests
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('view_results') }}">
+                            <i class="fas fa-chart-bar"></i> View Results
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10">
+            <div class="p-4">
+                <div class="row">
+                    <!-- Assign Test Form -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-tasks"></i> Assign New Test</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="POST" action="{{ url_for('assign_test') }}">
+                                    <div class="mb-3">
+                                        <label class="form-label">Student *</label>
+                                        <select class="form-select" name="student_id" required>
+                                            <option value="">Select Student</option>
+                                            {% for student in students %}
+                                            <option value="{{ student.id }}">{{ student.name }} ({{ student.username }})</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Test Folder/Subject *</label>
+                                        <input type="text" class="form-control" name="test_folder" 
+                                               placeholder="e.g., mathematics, physics, chemistry" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Test Name *</label>
+                                        <input type="text" class="form-control" name="test_name" 
+                                               placeholder="e.g., Midterm Exam, Quiz 1" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Test Date *</label>
+                                        <input type="date" class="form-control" name="test_date" required
+                                               min="{{ today.strftime('%Y-%m-%d') }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Test Duration (minutes) *</label>
+                                        <input type="number" class="form-control" name="test_duration" 
+                                               value="60" min="5" max="180" required>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane"></i> Assign Test
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Assignments -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-list"></i> Current Assignments</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if assignments %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Test</th>
+                                                <th>Date</th>
+                                                <th>Duration</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for assignment in assignments %}
+                                            <tr>
+                                                <td>{{ assignment.student.name }}</td>
+                                                <td>{{ assignment.test_name }}</td>
+                                                <td>{{ assignment.test_date.strftime('%Y-%m-%d') }}</td>
+                                                <td>{{ assignment.test_duration }} min</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted text-center">No active assignments</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Instructions -->
+                        <div class="card mt-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Instructions</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check text-success"></i> Test folder must match teacher's subject</li>
+                                    <li><i class="fas fa-check text-success"></i> Students can only take tests on assigned date</li>
+                                    <li><i class="fas fa-check text-success"></i> Tests auto-submit when time expires</li>
+                                    <li><i class="fas fa-check text-success"></i> Students can only take test once per day</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

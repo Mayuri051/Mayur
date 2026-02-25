@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Student Details - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-user-graduate"></i> Student Details: {{ student.name }}</h1>
+        </div>
+    </div>
+
+    <!-- Student Information -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Student Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>Username:</th>
+                            <td>{{ student.username }}</td>
+                        </tr>
+                        <tr>
+                            <th>Full Name:</th>
+                            <td>{{ student.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>{{ student.email or 'Not provided' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>
+                                <span class="badge bg-{{ 'success' if student.is_active else 'secondary' }}">
+                                    {{ 'Active' if student.is_active else 'Inactive' }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Joined:</th>
+                            <td>{{ student.created_at.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Performance Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h3>{{ total_tests }}</h3>
+                            <small class="text-muted">Tests Taken</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-success">{{ "%.1f"|format(avg_score) }}%</h3>
+                            <small class="text-muted">Average Score</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-warning">{{ "%.1f"|format(best_score) }}%</h3>
+                            <small class="text-muted">Best Score</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Results -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-alt"></i> Test Results</h5>
+                </div>
+                <div class="card-body">
+                    {% if results %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Test Name</th>
+                                    <th>Date</th>
+                                    <th>Score</th>
+                                    <th>Correct/Total</th>
+                                    <th>Time Taken</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for result in results %}
+                                <tr>
+                                    <td>{{ result.test_name }}</td>
+                                    <td>{{ result.test_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if result.percentage >= 80 %}success{% elif result.percentage >= 60 %}warning{% else %}danger{% endif %}">
+                                            {{ "%.1f"|format(result.percentage) }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ result.correct_answers }}/{{ result.total_questions }}</td>
+                                    <td>{{ result.time_taken }}s</td>
+                                    <td>{{ result.submitted_at.strftime('%H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No test results found for this student.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignments -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tasks"></i> Assigned Tests</h5>
+                </div>
+                <div class="card-body">
+                    {% if assignments %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Test Name</th>
+                                    <th>Subject/Folder</th>
+                                    <th>Test Date</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in assignments %}
+                                <tr>
+                                    <td>{{ assignment.test_name }}</td>
+                                    <td>{{ assignment.test_folder }}</td>
+                                    <td>{{ assignment.test_date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ assignment.test_duration }} minutes</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if assignment.is_active else 'secondary' }}">
+                                            {{ 'Active' if assignment.is_active else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No assignments found for this student.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Users
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

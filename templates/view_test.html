@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Test - {{ test.name }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .question-card {
+            background: white;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .question-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .correct-answer {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .option-label {
+            font-weight: 600;
+            min-width: 30px;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+        
+        .back-btn:hover {
+            color: white;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="{{ url_for('teacher_dashboard') }}">
+                <i class="fas fa-graduation-cap me-2"></i>TestMaster Pro
+            </a>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="test-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col">
+                    <a href="{{ url_for('manage_tests') }}" class="back-btn">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Tests
+                    </a>
+                </div>
+                <div class="col text-center">
+                    <h1 class="h2 mb-2">{{ test.name }}</h1>
+                    <p class="mb-0">{{ test.subject }} • {{ test.total_questions }} Questions • {{ test.duration }} Minutes</p>
+                </div>
+                <div class="col text-end">
+                    <span class="badge bg-light text-primary">{{ total_attempts }} Attempts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Test Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-question-circle fa-2x text-primary mb-2"></i>
+                    <h3 class="text-primary">{{ test.total_questions }}</h3>
+                    <p class="text-muted mb-0">Total Questions</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                    <h3 class="text-info">{{ test.duration }}</h3>
+                    <p class="text-muted mb-0">Minutes</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-users fa-2x text-success mb-2"></i>
+                    <h3 class="text-success">{{ total_attempts }}</h3>
+                    <p class="text-muted mb-0">Total Attempts</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card text-center">
+                    <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
+                    <h3 class="text-warning">
+                        {% if total_attempts > 0 %}
+                            {{ "%.1f"|format(avg_score) }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </h3>
+                    <p class="text-muted mb-0">Average Score</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Description -->
+        {% if test.description %}
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-align-left me-2"></i>Test Description</h5>
+                <p class="card-text text-muted">{{ test.description }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="card mb-4 border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('assign_test_to_students', test_id=test.id) }}" class="btn btn-success">
+                        <i class="fas fa-user-plus me-2"></i>Assign to Students
+                    </a>
+                    {% if total_attempts > 0 %}
+                    <a href="{{ url_for('test_results', test_id=test.id) }}" class="btn btn-info">
+                        <i class="fas fa-chart-bar me-2"></i>View Results
+                    </a>
+                    <a href="{{ url_for('test_leaderboard', test_id=test.id) }}" class="btn btn-warning">
+                        <i class="fas fa-trophy me-2"></i>Leaderboard
+                    </a>
+                    {% else %}
+                    <button class="btn btn-info" disabled>
+                        <i class="fas fa-chart-bar me-2"></i>No Results Yet
+                    </button>
+                    <button class="btn btn-warning" disabled>
+                        <i class="fas fa-trophy me-2"></i>No Leaderboard
+                    </button>
+                    {% endif %}
+                    <a href="{{ url_for('manage_tests') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Tests
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions List -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0"><i class="fas fa-list-ol me-2"></i>Test Questions ({{ test_questions|length }})</h4>
+            </div>
+            <div class="card-body">
+                {% if test_questions %}
+                    {% for tq in test_questions %}
+                    <div class="question-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0">Question {{ tq.question_number }}</h5>
+                                <span class="badge bg-secondary">{{ tq.question.difficulty|title }}</span>
+                            </div>
+                            
+                            <p class="card-text mb-3">{{ tq.question.question_text }}</p>
+                            
+                            <div class="options-container">
+                                <div class="option mb-2 {% if tq.question.correct_answer == 'A' %}correct-answer{% endif %} p-2 rounded">
+                                    <span class="option-label">A)</span> {{ tq.question.option_a }}
+                                </div>
+                                <div class="option mb-2 {% if tq.question.correct_answer == 'B' %}correct-answer{% endif %} p-2 rounded">
+                                    <span class="option-label">B)</span> {{ tq.question.option_b }}
+                                </div>
+                                <div class="option mb-2 {% if tq.question.correct_answer == 'C' %}correct-answer{% endif %} p-2 rounded">
+                                    <span class="option-label">C)</span> {{ tq.question.option_c }}
+                                </div>
+                                <div class="option mb-2 {% if tq.question.correct_answer == 'D' %}correct-answer{% endif %} p-2 rounded">
+                                    <span class="option-label">D)</span> {{ tq.question.option_d }}
+                                </div>
+                            </div>
+                            
+                            {% if tq.question.explanation %}
+                            <div class="explanation mt-3 p-3 bg-light rounded">
+                                <strong><i class="fas fa-lightbulb me-2 text-warning"></i>Explanation:</strong>
+                                <p class="mb-0 mt-1">{{ tq.question.explanation }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="question-meta mt-3 pt-3 border-top">
+                                <small class="text-muted">
+                                    <i class="fas fa-check-circle me-1 text-success"></i>
+                                    Correct Answer: <strong>{{ tq.question.correct_answer }}</strong>
+                                    {% if tq.question.uploaded_by %}
+                                    • Created by you
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-question-circle fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Questions Found</h5>
+                    <p class="text-muted">This test doesn't have any questions yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

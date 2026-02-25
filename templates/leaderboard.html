@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-trophy"></i> Leaderboard</h1>
+        </div>
+    </div>
+
+    <!-- Top Students -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-graduate"></i> Top Students</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_students %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Student Name</th>
+                                    <th>Username</th>
+                                    <th>Average Score</th>
+                                    <th>Best Score</th>
+                                    <th>Tests Taken</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in top_students %}
+                                <tr>
+                                    <td>
+                                        {% if loop.index == 1 %}
+                                        <span class="badge bg-warning">🥇 1st</span>
+                                        {% elif loop.index == 2 %}
+                                        <span class="badge bg-secondary">🥈 2nd</span>
+                                        {% elif loop.index == 3 %}
+                                        <span class="badge bg-danger">🥉 3rd</span>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark">#{{ loop.index }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ student.name }}</strong>
+                                        <br><a href="{{ url_for('student_details', student_id=student.id) }}" 
+                                               class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </td>
+                                    <td>{{ student.username }}</td>
+                                    <td>
+                                        <span class="badge bg-success">{{ "%.1f"|format(student.avg_score) }}%</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ "%.1f"|format(student.best_score) }}%</span>
+                                    </td>
+                                    <td>{{ student.tests_taken }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No student results available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Performance -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chalkboard-teacher"></i> Teacher Performance</h5>
+                </div>
+                <div class="card-body">
+                    {% if teacher_performance %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Teacher Name</th>
+                                    <th>Average Class Score</th>
+                                    <th>Total Tests Taken</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in teacher_performance %}
+                                <tr>
+                                    <td>{{ teacher.teacher_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if teacher.avg_class_score >= 80 %}success{% elif teacher.avg_class_score >= 60 %}warning{% else %}danger{% endif %}">
+                                            {{ "%.1f"|format(teacher.avg_class_score) }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ teacher.total_tests_taken }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No teacher performance data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Performance -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-alt"></i> Test Performance</h5>
+                </div>
+                <div class="card-body">
+                    {% if test_performance %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Test Name</th>
+                                    <th>Average Score</th>
+                                    <th>Total Attempts</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in test_performance %}
+                                <tr>
+                                    <td>{{ test.test_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if test.avg_score >= 80 %}success{% elif test.avg_score >= 60 %}warning{% else %}danger{% endif %}">
+                                            {{ "%.1f"|format(test.avg_score) }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ test.attempts }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No test performance data available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
